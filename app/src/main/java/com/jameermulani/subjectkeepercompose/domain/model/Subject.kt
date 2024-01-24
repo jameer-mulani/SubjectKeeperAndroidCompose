@@ -1,10 +1,10 @@
 package com.jameermulani.subjectkeepercompose.domain.model
 
-import java.time.LocalDate
+import java.util.Date
 
 data class Subject(
     val id: Int = 0,
     val subjectName: String,
     val subjectCoverUrl: String,
-    val createdDate: LocalDate
+    val createdDate: Date
 )
