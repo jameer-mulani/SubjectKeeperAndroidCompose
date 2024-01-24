@@ -1,4 +1,4 @@
-package com.jameermulani.subjectkeepercompose.ui.theme
+package com.jameermulani.subjectkeepercompose.presentation.ui.theme
 
 import android.app.Activity
 import android.os.Build
