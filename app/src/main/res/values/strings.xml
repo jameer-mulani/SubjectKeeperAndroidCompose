@@ -3,4 +3,9 @@
     <string name="subjects">Subjects</string>
     <string name="profile">Profile</string>
     <string name="bin">Bin</string>
+    <string name="enter_subject_name">Enter subject name</string>
+    <string name="subject_name">Subject name</string>
+    <string name="save_subject">Save Subject</string>
+    <string name="create_subject">Create Subject</string>
+    <string name="go_to_previous_screen">go to previous screen</string>
 </resources>

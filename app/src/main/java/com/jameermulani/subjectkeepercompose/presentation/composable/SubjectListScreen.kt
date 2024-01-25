@@ -21,21 +21,30 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.jameermulani.subjectkeepercompose.presentation.composable.model.SubjectListItemModel
 import com.jameermulani.subjectkeepercompose.presentation.state.StateResourceStatus.Failed
 import com.jameermulani.subjectkeepercompose.presentation.state.StateResourceStatus.Loading
 import com.jameermulani.subjectkeepercompose.presentation.state.StateResourceStatus.Success
 import com.jameermulani.subjectkeepercompose.presentation.state.StateResourceStatus.Undefined
-import com.jameermulani.subjectkeepercompose.presentation.viewmodel.SubjectListViewModel
+import com.jameermulani.subjectkeepercompose.presentation.viewmodel.SubjectViewModel
 
 @Composable
-fun SubjectListScreen(subjectListViewModel: SubjectListViewModel = hiltViewModel()) {
+fun SubjectListScreen(
+    navHostController: NavHostController,
+    onAddSubjectClickListener: () -> Unit,
+    subjectListViewModel: SubjectViewModel = hiltViewModel()
+) {
 
     val state = subjectListViewModel.allSubjectsState
+    LaunchedEffect(key1 = "get_subjects") {
+        subjectListViewModel.getAllSubjects()
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -43,9 +52,9 @@ fun SubjectListScreen(subjectListViewModel: SubjectListViewModel = hiltViewModel
         contentAlignment = Alignment.Center
     ) {
         when (state.value.state) {
-            Loading -> ShowLoadingUi()
-            Success -> ShowSubjectListUi(state.value.data ?: listOf())
-            Failed -> ShowFailedToLoadUi(
+            Loading -> LoadingUi()
+            Success -> SubjectListUi(state.value.data ?: listOf())
+            Failed -> FailedToLoadUi(
                 errorLine1 = "Could not load list",
                 errorLine2 = "Please try again"
             )
@@ -54,7 +63,7 @@ fun SubjectListScreen(subjectListViewModel: SubjectListViewModel = hiltViewModel
         }
 
         FloatingActionButton(
-            onClick = {},
+            onClick = onAddSubjectClickListener,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
@@ -67,10 +76,10 @@ fun SubjectListScreen(subjectListViewModel: SubjectListViewModel = hiltViewModel
 }
 
 @Composable
-fun ShowSubjectListUi(list: List<SubjectListItemModel>) {
+fun SubjectListUi(list: List<SubjectListItemModel>) {
 
     if (list.isEmpty()) {
-        ShowFailedToLoadUi(
+        FailedToLoadUi(
             errorLine1 = "No Subjects to Show",
             errorLine2 = "To add Subject click on + button"
         )
@@ -78,6 +87,7 @@ fun ShowSubjectListUi(list: List<SubjectListItemModel>) {
         LazyColumn() {
             items(list) {
                 SubjectListItem(
+                    modifier = Modifier.padding(2.dp),
                     subjectListItemModel = it
                 )
             }
@@ -92,7 +102,7 @@ fun SubjectListItem(
 ) {
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .then(modifier),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -107,12 +117,21 @@ fun SubjectListItem(
                 modifier = Modifier
                     .size(120.dp)
             )
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = subjectListItemModel.subjectName,
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
         }
     }
 }
 
 @Composable
-fun ShowFailedToLoadUi(errorLine1: String, errorLine2: String, modifier: Modifier = Modifier) {
+fun FailedToLoadUi(errorLine1: String, errorLine2: String, modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -124,6 +143,6 @@ fun ShowFailedToLoadUi(errorLine1: String, errorLine2: String, modifier: Modifie
 }
 
 @Composable
-fun ShowLoadingUi() {
+fun LoadingUi() {
     CircularProgressIndicator()
 }

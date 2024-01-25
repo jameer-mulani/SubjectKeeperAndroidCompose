@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ScaffoldWithContent(
     title: String,
-    menuClickListener: () -> Unit,
+    navigationIcon : @Composable () -> Unit,
     scaffoldContent: @Composable () -> Unit
 ) {
     Scaffold(
@@ -27,14 +27,7 @@ fun ScaffoldWithContent(
                 Text(text = title)
             },
                 navigationIcon = {
-                    Icon(
-                        Icons.Default.Menu,
-                        contentDescription = "",
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .clickable {
-                                menuClickListener()
-                            })
+                    navigationIcon()
                 })
         },
     ) {

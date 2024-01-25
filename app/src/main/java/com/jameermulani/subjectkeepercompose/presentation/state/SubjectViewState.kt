@@ -12,7 +12,7 @@ data class StateResource<out T>(
     val state: StateResourceStatus = StateResourceStatus.Undefined
 ) {
     companion object {
-        fun <T> success(data: T) = StateResource(data = data, state = StateResourceStatus.Success)
+        fun <T> success(data: T) = StateResource(data = data, state = StateResourceStatus.Success, error = null)
         fun <T> failed(error: String) =
             StateResource(data = null, error = error, state = StateResourceStatus.Failed)
 

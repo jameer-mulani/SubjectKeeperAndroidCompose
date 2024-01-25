@@ -1,10 +1,15 @@
 package com.jameermulani.subjectkeepercompose.presentation.composable
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -13,9 +18,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jameermulani.subjectkeepercompose.R
 import com.jameermulani.subjectkeepercompose.presentation.composable.model.DrawerItem
@@ -25,7 +33,7 @@ import kotlinx.coroutines.launch
 fun SubjectKeeperApp() {
 
     val navController = rememberNavController()
-    val startDestination = Routes.SubjectListScreen
+    val startDestination = Route.SubjectListScreen.name
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
     var scaffoldTitle by remember { mutableStateOf(R.string.subjects) }
@@ -42,7 +50,9 @@ fun SubjectKeeperApp() {
 
     val subjectDrawerItemOnClickListener: (DrawerItem) -> Unit = { di: DrawerItem ->
         scaffoldTitle = di.label
-        navController.navigate(Routes.SubjectListScreen)
+        navController.navigate(Route.SubjectListScreen.name) {
+            launchSingleTop = true
+        }
         coroutineScope.launch { drawerState.close() }
     }
 
@@ -70,21 +80,66 @@ fun SubjectKeeperApp() {
         binDrawerItem
     )
     var selectedDrawerItem by remember { mutableStateOf(drawerItems.first()) }
+    val routeState = navController.currentBackStackEntryAsState()
+
 
     SubjectAppScaffoldWithDrawer(drawerState = drawerState, drawerItems, selectedDrawerItem) {
         ScaffoldWithContent(
             stringResource(id = scaffoldTitle),
-            menuClickListener = { coroutineScope.launch { drawerState.open() } }) {
+            navigationIcon = {
+
+                when (routeState.value?.destination?.route) {
+                    Route.CreateSubjectScreen.name -> {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "",
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .clickable {
+                                    navController.popBackStack()
+                                })
+                        scaffoldTitle = R.string.create_subject
+                    }
+
+                    Route.SubjectListScreen.name -> {
+                        scaffoldTitle = R.string.subjects
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = "",
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .clickable {
+                                    coroutineScope.launch { drawerState.open() }
+                                })
+                    }
+
+                    else -> {
+
+                    }
+                }
+
+            }) {
             NavHost(navController = navController, startDestination = startDestination) {
                 composable(route = startDestination) {
-                    SubjectListScreen()
+                    SubjectListScreen(
+                        navHostController = navController,
+                        onAddSubjectClickListener = {
+                            navController.navigate(Route.CreateSubjectScreen.name){
+                                launchSingleTop = true
+                            }
+                        })
                 }
+
+                composable(route = Route.CreateSubjectScreen.name) {
+                    CreateSubjectScreen(navHostController = navController)
+                }
+
+
             }
         }
     }
 
 }
-
 
 @Composable
 fun SubjectAppScaffoldWithDrawer(
@@ -104,6 +159,12 @@ fun SubjectAppScaffoldWithDrawer(
     }
 }
 
-object Routes {
-    const val SubjectListScreen = "subjects"
+sealed class Route(val name: String) {
+    data object SubjectListScreen : Route("subjects")
+
+    data object CreateSubjectScreen : Route("create_subject")
+    data object SearchImageScreen : Route("search_image")
+    data object BinScreen : Route("bin")
+    data object FavoriteScreen : Route("favorite")
+    data object SettingScreen : Route("setting")
 }
