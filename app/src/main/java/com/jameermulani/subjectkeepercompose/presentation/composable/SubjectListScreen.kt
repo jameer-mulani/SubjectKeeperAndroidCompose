@@ -143,6 +143,6 @@ fun FailedToLoadUi(errorLine1: String, errorLine2: String, modifier: Modifier = 
 }
 
 @Composable
-fun LoadingUi() {
-    CircularProgressIndicator()
+fun LoadingUi(modifier: Modifier = Modifier) {
+    CircularProgressIndicator(modifier = modifier)
 }

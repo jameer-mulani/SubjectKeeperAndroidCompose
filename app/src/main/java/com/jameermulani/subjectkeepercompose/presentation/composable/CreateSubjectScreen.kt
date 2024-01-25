@@ -43,7 +43,9 @@ import com.jameermulani.subjectkeepercompose.presentation.viewmodel.SubjectViewM
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateSubjectScreen(
+    selectedImage : String,
     navHostController: NavHostController,
+    onSubjectCoverImageClickListener : ()->Unit,
     subjectViewModel: SubjectViewModel = hiltViewModel()
 ) {
 
@@ -80,10 +82,10 @@ fun CreateSubjectScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            AsyncImageComposable(url = "", modifier = Modifier
+            AsyncImageComposable(url = selectedImage, modifier = Modifier
                 .size(92.dp)
                 .clickable {
-
+                    onSubjectCoverImageClickListener()
                 })
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
@@ -104,7 +106,7 @@ fun CreateSubjectScreen(
             Button(onClick = {
                 subjectViewModel.saveSubject(
                     subjectName = subjectNameText,
-                    subjectCoverUrl = ""
+                    subjectCoverUrl = selectedImage
                 )
             }) {
                 Text(text = stringResource(R.string.save_subject))

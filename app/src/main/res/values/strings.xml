@@ -8,4 +8,6 @@
     <string name="save_subject">Save Subject</string>
     <string name="create_subject">Create Subject</string>
     <string name="go_to_previous_screen">go to previous screen</string>
+    <string name="search_image">Search Image</string>
+    <string name="what_images_would_like_to_see">What images would like to see</string>
 </resources>

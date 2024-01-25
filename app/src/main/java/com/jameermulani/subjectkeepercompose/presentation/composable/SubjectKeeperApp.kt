@@ -89,28 +89,26 @@ fun SubjectKeeperApp() {
             navigationIcon = {
 
                 when (routeState.value?.destination?.route) {
+
+                    Route.SearchImageScreen.name -> {
+                        scaffoldTitle = R.string.search_image
+                        NavigationIconForSubScreen {
+                            navController.popBackStack()
+                        }
+                    }
+
                     Route.CreateSubjectScreen.name -> {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "",
-                            modifier = Modifier
-                                .padding(12.dp)
-                                .clickable {
-                                    navController.popBackStack()
-                                })
                         scaffoldTitle = R.string.create_subject
+                        NavigationIconForSubScreen {
+                            navController.popBackStack()
+                        }
                     }
 
                     Route.SubjectListScreen.name -> {
                         scaffoldTitle = R.string.subjects
-                        Icon(
-                            Icons.Default.Menu,
-                            contentDescription = "",
-                            modifier = Modifier
-                                .padding(12.dp)
-                                .clickable {
-                                    coroutineScope.launch { drawerState.open() }
-                                })
+                        NavigationIconForHome {
+                            coroutineScope.launch { drawerState.open() }
+                        }
                     }
 
                     else -> {
@@ -124,21 +122,55 @@ fun SubjectKeeperApp() {
                     SubjectListScreen(
                         navHostController = navController,
                         onAddSubjectClickListener = {
-                            navController.navigate(Route.CreateSubjectScreen.name){
+                            navController.navigate(Route.CreateSubjectScreen.name) {
                                 launchSingleTop = true
                             }
                         })
                 }
 
                 composable(route = Route.CreateSubjectScreen.name) {
-                    CreateSubjectScreen(navHostController = navController)
+                    //get the selected image_url when user selects the image from searchImageScreen
+                    val selectedImage = it.savedStateHandle.get<String>("image_url").orEmpty()
+                    CreateSubjectScreen(
+                        selectedImage = selectedImage,
+                        navHostController = navController, onSubjectCoverImageClickListener = {
+                        navController.navigate(Route.SearchImageScreen.name)
+                    })
                 }
 
-
+                composable(route = Route.SearchImageScreen.name) {
+                    ImageSearchScreen(onImageSelectedListener = {imageUrl ->
+                        navController.previousBackStackEntry?.savedStateHandle?.set("image_url", imageUrl)
+                        navController.popBackStack()
+                    })
+                }
             }
         }
     }
+}
 
+@Composable
+fun NavigationIconForSubScreen(onClick : ()->Unit) {
+    Icon(
+        Icons.Default.ArrowBack,
+        contentDescription = "",
+        modifier = Modifier
+            .padding(12.dp)
+            .clickable {
+                onClick()
+            })
+}
+
+@Composable
+fun NavigationIconForHome(onClick : ()->Unit) {
+    Icon(
+        Icons.Default.Menu,
+        contentDescription = "",
+        modifier = Modifier
+            .padding(12.dp)
+            .clickable {
+                onClick()
+            })
 }
 
 @Composable
