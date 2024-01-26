@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jameermulani.subjectkeepercompose.domain.model.Subject
 import com.jameermulani.subjectkeepercompose.domain.usecase.AddSubjectUseCase
+import com.jameermulani.subjectkeepercompose.domain.usecase.DeleteSubjectUseCase
 import com.jameermulani.subjectkeepercompose.domain.usecase.GetAllSubjectsUseCase
 import com.jameermulani.subjectkeepercompose.presentation.composable.model.SaveSubjectState
 import com.jameermulani.subjectkeepercompose.presentation.composable.model.SubjectListItemModel
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SubjectViewModel @Inject constructor(
     private val getAllSubjectsUseCase: GetAllSubjectsUseCase,
-    private val addSubjectUseCase: AddSubjectUseCase
+    private val addSubjectUseCase: AddSubjectUseCase,
+    private val deleteSubjectUseCase: DeleteSubjectUseCase
 ) : ViewModel() {
 
     private val _allSubjectsState = mutableStateOf(
@@ -43,6 +45,7 @@ class SubjectViewModel @Inject constructor(
             val allSubjectsUseCase = getAllSubjectsUseCase(null)
             allSubjectsUseCase.map {
                 SubjectListItemModel(
+                    subjectId = it.id,
                     subjectName = it.subjectName,
                     subjectCoverUrl = it.subjectCoverUrl,
                     lastCreatedOn = "Today"
@@ -87,6 +90,30 @@ class SubjectViewModel @Inject constructor(
                 success = result,
                 error = if (result) null else "Failed to save Subject"
             )
+        }
+    }
+
+    fun toggleAllSubjectSelection(checked: Boolean) {
+       val copy = _allSubjectsState.value.data?.map {
+            it.copy(selected = checked)
+        } ?: emptyList()
+        _allSubjectsState.value = _allSubjectsState.value.copy(data = copy)
+    }
+
+    fun deleteAllCheckedSubjects() {
+        viewModelScope.launch {
+            val copy = _allSubjectsState.value.data?.filter { it.selected } ?: emptyList()
+            _allSubjectsState.value = StateResource.loading<List<SubjectListItemModel>>()
+            deleteAllSubjectsInternal(copy)
+            getAllSubjects()
+        }
+    }
+
+    private suspend fun deleteAllSubjectsInternal(list : List<SubjectListItemModel>){
+        withContext(Dispatchers.IO + coroutineExceptionHandler){
+            list.forEach {
+                deleteSubjectUseCase(it.subjectId)
+            }
         }
     }
 

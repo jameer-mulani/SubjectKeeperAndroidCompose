@@ -1,5 +1,6 @@
 package com.jameermulani.subjectkeepercompose.presentation.composable
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -19,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
@@ -26,6 +28,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jameermulani.subjectkeepercompose.R
+import com.jameermulani.subjectkeepercompose.presentation.DeleteSubjectActivity
 import com.jameermulani.subjectkeepercompose.presentation.composable.model.DrawerItem
 import kotlinx.coroutines.launch
 
@@ -81,15 +84,39 @@ fun SubjectKeeperApp() {
     )
     var selectedDrawerItem by remember { mutableStateOf(drawerItems.first()) }
     val routeState = navController.currentBackStackEntryAsState()
+    val currentRoute = routeState?.value?.destination?.route
+    val context = LocalContext.current
+
 
 
     SubjectAppScaffoldWithDrawer(drawerState = drawerState, drawerItems, selectedDrawerItem) {
         ScaffoldWithContent(
             stringResource(id = scaffoldTitle),
+            actions = {
+                when (currentRoute) {
+                    Route.SubjectListScreen.name -> {
+                        Icon(imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(
+                                R.string.delete_subject
+                            ),
+                            modifier = Modifier.clickable {
+                                context.startActivity(
+                                    Intent(
+                                        context,
+                                        DeleteSubjectActivity::class.java
+                                    )
+                                )
+                            }
+                        )
+                    }
+
+                    else -> {
+                        //no-ops
+                    }
+                }
+            },
             navigationIcon = {
-
-                when (routeState.value?.destination?.route) {
-
+                when (currentRoute) {
                     Route.SearchImageScreen.name -> {
                         scaffoldTitle = R.string.search_image
                         NavigationIconForSubScreen {
@@ -111,9 +138,7 @@ fun SubjectKeeperApp() {
                         }
                     }
 
-                    else -> {
-
-                    }
+                    else -> {}
                 }
 
             }) {
@@ -134,13 +159,16 @@ fun SubjectKeeperApp() {
                     CreateSubjectScreen(
                         selectedImage = selectedImage,
                         navHostController = navController, onSubjectCoverImageClickListener = {
-                        navController.navigate(Route.SearchImageScreen.name)
-                    })
+                            navController.navigate(Route.SearchImageScreen.name)
+                        })
                 }
 
                 composable(route = Route.SearchImageScreen.name) {
-                    ImageSearchScreen(onImageSelectedListener = {imageUrl ->
-                        navController.previousBackStackEntry?.savedStateHandle?.set("image_url", imageUrl)
+                    ImageSearchScreen(onImageSelectedListener = { imageUrl ->
+                        navController.previousBackStackEntry?.savedStateHandle?.set(
+                            "image_url",
+                            imageUrl
+                        )
                         navController.popBackStack()
                     })
                 }
@@ -150,7 +178,7 @@ fun SubjectKeeperApp() {
 }
 
 @Composable
-fun NavigationIconForSubScreen(onClick : ()->Unit) {
+fun NavigationIconForSubScreen(onClick: () -> Unit) {
     Icon(
         Icons.Default.ArrowBack,
         contentDescription = "",
@@ -162,7 +190,7 @@ fun NavigationIconForSubScreen(onClick : ()->Unit) {
 }
 
 @Composable
-fun NavigationIconForHome(onClick : ()->Unit) {
+fun NavigationIconForHome(onClick: () -> Unit) {
     Icon(
         Icons.Default.Menu,
         contentDescription = "",
@@ -193,7 +221,6 @@ fun SubjectAppScaffoldWithDrawer(
 
 sealed class Route(val name: String) {
     data object SubjectListScreen : Route("subjects")
-
     data object CreateSubjectScreen : Route("create_subject")
     data object SearchImageScreen : Route("search_image")
     data object BinScreen : Route("bin")

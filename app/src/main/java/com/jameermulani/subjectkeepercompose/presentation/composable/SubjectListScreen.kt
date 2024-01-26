@@ -1,13 +1,16 @@
 package com.jameermulani.subjectkeepercompose.presentation.composable
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -53,13 +57,13 @@ fun SubjectListScreen(
     ) {
         when (state.value.state) {
             Loading -> LoadingUi()
-            Success -> SubjectListUi(state.value.data ?: listOf())
+            Success -> SubjectListUi(state.value.data ?: listOf(), modifier = Modifier.align(
+                Alignment.TopStart))
             Failed -> FailedToLoadUi(
                 errorLine1 = "Could not load list",
                 errorLine2 = "Please try again"
             )
-
-            Undefined -> subjectListViewModel.getAllSubjects()
+            Undefined -> {}
         }
 
         FloatingActionButton(
@@ -76,7 +80,7 @@ fun SubjectListScreen(
 }
 
 @Composable
-fun SubjectListUi(list: List<SubjectListItemModel>) {
+fun SubjectListUi(list: List<SubjectListItemModel>, modifier : Modifier = Modifier) {
 
     if (list.isEmpty()) {
         FailedToLoadUi(
@@ -84,7 +88,11 @@ fun SubjectListUi(list: List<SubjectListItemModel>) {
             errorLine2 = "To add Subject click on + button"
         )
     } else {
-        LazyColumn() {
+        LazyColumn(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            modifier = modifier
+        ) {
             items(list) {
                 SubjectListItem(
                     modifier = Modifier.padding(2.dp),
@@ -98,12 +106,13 @@ fun SubjectListUi(list: List<SubjectListItemModel>) {
 @Composable
 fun SubjectListItem(
     subjectListItemModel: SubjectListItemModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSubjectSelectedListener : (Boolean, SubjectListItemModel)->Unit = { _, _ ->}
 ) {
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .then(modifier),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(8.dp)
@@ -112,11 +121,21 @@ fun SubjectListItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start,
         ) {
+
+            AnimatedVisibility(visible = subjectListItemModel.selected) {
+                Checkbox(checked = subjectListItemModel.selected, onCheckedChange = {
+                    onSubjectSelectedListener(it, subjectListItemModel)
+                })
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
             AsyncImageComposable(
                 url = subjectListItemModel.subjectCoverUrl,
                 modifier = Modifier
                     .size(120.dp)
             )
+            Spacer(modifier = Modifier.width(8.dp))
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start

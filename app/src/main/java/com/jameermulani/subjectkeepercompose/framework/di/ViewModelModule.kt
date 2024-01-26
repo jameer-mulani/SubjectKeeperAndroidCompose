@@ -3,8 +3,10 @@ package com.jameermulani.subjectkeepercompose.framework.di
 import com.jameermulani.subjectkeepercompose.data.respository.NetworkRepositoryImpl
 import com.jameermulani.subjectkeepercompose.domain.repository.SubjectRepository
 import com.jameermulani.subjectkeepercompose.domain.usecase.AddSubjectUseCase
+import com.jameermulani.subjectkeepercompose.domain.usecase.DeleteSubjectUseCase
 import com.jameermulani.subjectkeepercompose.domain.usecase.GetAllSubjectsUseCase
 import com.jameermulani.subjectkeepercompose.usecases.implementation.AddSubjectUseCaseImpl
+import com.jameermulani.subjectkeepercompose.usecases.implementation.DeleteSubjectUseCaseImpl
 import com.jameermulani.subjectkeepercompose.usecases.implementation.GetAllSubjectUseCaseImpl
 import com.jameermulani.subjectkeepercompose.usecases.implementation.SearchImageUseCase
 import dagger.Module
@@ -28,6 +30,10 @@ object ViewModelModule {
     @Provides
     fun provideSearchImageUseCase(networkRepositoryImpl: NetworkRepositoryImpl) =
         SearchImageUseCase(networkRepositoryImpl)
+
+    @Provides
+    fun provideDeleteSubjectUseCase(subjectRepository: SubjectRepository) =
+        DeleteSubjectUseCaseImpl(subjectRepository) as DeleteSubjectUseCase
 
 
 }
